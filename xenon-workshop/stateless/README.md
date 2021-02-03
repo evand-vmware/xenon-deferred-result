@@ -1,3 +1,0 @@
-# About
-
-Demonstrate stateless service.

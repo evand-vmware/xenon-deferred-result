@@ -21,8 +21,6 @@ import java.util.LinkedHashMap;
 import java.util.Random;
 import java.util.UUID;
 
-import com.vmware.xenon.common.Service.Action;
-import com.vmware.xenon.common.Utils;
 import com.vmware.xenon.common.test.VerificationHost;
 import com.vmware.xenon.services.common.ExampleService.ExampleServiceState;
 import com.vmware.xenon.services.common.QueryValidationTestService.QueryValidationServiceState;

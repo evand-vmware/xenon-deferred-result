@@ -28,8 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import com.vmware.xenon.common.config.XenonConfiguration;
-
 /**
  * This is an implementation of a condensed version of {@link CompletionStage},
  * excluding the methods that implicitly use a global executor. This class
@@ -38,9 +36,7 @@ import com.vmware.xenon.common.config.XenonConfiguration;
  */
 public final class DeferredResult<T> {
     private static final Logger LOG = Logger.getLogger(DeferredResult.class.getName());
-    private static boolean IS_UNCAUGHT_EXCEPTION_LOGGING_ENABLED = XenonConfiguration.bool(
-            DeferredResult.class,
-            "isUncaughtExceptionLoggingEnabled", false);
+    private static boolean IS_UNCAUGHT_EXCEPTION_LOGGING_ENABLED = true; // FIXME
 
     private final CompletableFuture<T> completableFuture;
     private boolean isLastInChain;
@@ -151,7 +147,7 @@ public final class DeferredResult<T> {
 
     /**
      * Creates a new {@link DeferredResult} by wrapping the provided {@link CompletableFuture}
-     * @param completionStage
+     * @param completableFuture
      */
     public DeferredResult(CompletableFuture<T> completableFuture) {
         this.completableFuture = completableFuture;
@@ -160,7 +156,7 @@ public final class DeferredResult<T> {
 
     /**
      * Wraps the provided {@link CompletableFuture} into {@link DeferredResult}
-     * @param completionStage
+     * @param completableFuture
      * @return
      */
     protected <U> DeferredResult<U> wrap(CompletableFuture<U> completableFuture) {
@@ -170,7 +166,7 @@ public final class DeferredResult<T> {
 
     /**
      * Adds additional exception handler to the completable future, if
-     * {@link DeferredResult#IS_LOGGING_UNCAUGHT_EXCEPTIONS_ENABLED} is true and in case the handled exception is
+     * {@link DeferredResult#IS_UNCAUGHT_EXCEPTION_LOGGING_ENABLED} is true and in case the handled exception is
      * the last invocation in the chain, logs the exception and the initiator of the deferred result so that it
      * can be properly handled..
      * @param dr
@@ -451,22 +447,22 @@ public final class DeferredResult<T> {
         return this.completableFuture.completeExceptionally(ex);
     }
 
-    /**
-     * Has the same semantics as {@link #whenComplete(BiConsumer)} but notifies
-     * the provided operation that the stage is completed.
-     * @param operation
-     * @return
-     */
-    public DeferredResult<T> whenCompleteNotify(Operation operation) {
-        return wrap(this.completableFuture.whenComplete((ignore, ex) -> {
-            if (ex != null) {
-                if (ex instanceof CompletionException) {
-                    ex = ex.getCause();
-                }
-                operation.fail(ex);
-            } else {
-                operation.complete();
-            }
-        }));
-    }
+//    /** TODO Reimplement without Operation
+//     * Has the same semantics as {@link #whenComplete(BiConsumer)} but notifies
+//     * the provided operation that the stage is completed.
+//     * @param operation
+//     * @return
+//     */
+//    public DeferredResult<T> whenCompleteNotify(Operation operation) {
+//        return wrap(this.completableFuture.whenComplete((ignore, ex) -> {
+//            if (ex != null) {
+//                if (ex instanceof CompletionException) {
+//                    ex = ex.getCause();
+//                }
+//                operation.fail(ex);
+//            } else {
+//                operation.complete();
+//            }
+//        }));
+//    }
 }

@@ -19,7 +19,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
-import com.vmware.xenon.common.ServiceDocument;
 import com.vmware.xenon.common.serialization.KryoSerializers;
 
 @State(Scope.Thread)

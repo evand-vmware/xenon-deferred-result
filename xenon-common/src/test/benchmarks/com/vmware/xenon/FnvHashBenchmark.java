@@ -15,8 +15,6 @@ package com.vmware.xenon;
 
 import org.openjdk.jmh.annotations.Benchmark;
 
-import com.vmware.xenon.common.FNVHash;
-
 public class FnvHashBenchmark {
 
     public static final String EXAMPLE = BenchmarkDataFactory.randomString(2048);

@@ -13,8 +13,6 @@
 
 package com.vmware.xenon.common.test;
 
-import static com.vmware.xenon.common.ServiceHost.ServiceHostState.DEFAULT_MAINTENANCE_INTERVAL_MICROS;
-
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -25,12 +23,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import com.vmware.xenon.common.DeferredResult;
-import com.vmware.xenon.common.Operation.CompletionHandler;
-import com.vmware.xenon.common.test.VerificationHost.WaitHandler;
 
 /**
  * Test context used for synchronous tests. Provides an isolated version of the
@@ -41,7 +36,7 @@ public class TestContext {
     public static final Duration DEFAULT_WAIT_DURATION = Duration.ofSeconds(30);
 
     // default interval to perform waitFor logic. set a tenth of the default maintenance interval
-    public static final Duration DEFAULT_INTERVAL_DURATION = Duration.of(DEFAULT_MAINTENANCE_INTERVAL_MICROS / 10, ChronoUnit.MICROS);
+    public static final Duration DEFAULT_INTERVAL_DURATION = Duration.of(60000 / 10, ChronoUnit.MICROS);
 
     private CountDownLatch latch;
 
@@ -83,49 +78,6 @@ public class TestContext {
     public static TestContext create(int count, long expIntervalMicros) {
         return new TestContext(count, Duration.of(expIntervalMicros, ChronoUnit.MICROS));
     }
-
-    public static void waitFor(Duration waitDuration, WaitHandler wh) {
-        waitFor(new WaitConfig().setDuration(waitDuration), wh, () -> "waitFor timed out");
-    }
-
-    public static void waitFor(Duration waitDuration, WaitHandler wh, String timeoutMessage) {
-        waitFor(new WaitConfig().setDuration(waitDuration), wh, () -> timeoutMessage);
-    }
-
-    public static void waitFor(Duration waitDuration, WaitHandler wh, Supplier<String> timeoutMessageSupplier) {
-        waitFor(new WaitConfig().setDuration(waitDuration), wh, timeoutMessageSupplier);
-    }
-
-    public static void waitFor(WaitConfig waitConfig, WaitHandler wh, Supplier<String> timeoutMessageSupplier) {
-
-        if (waitConfig.duration == null) {
-            throw new RuntimeException("duration must be specified");
-        }
-
-        TestContext waitContext = new TestContext(1, waitConfig.duration);
-        waitContext.setCheckInterval(waitConfig.interval);
-
-        try {
-            waitContext.await(() -> {
-                if (wh.isReady()) {
-                    waitContext.complete();
-                }
-            });
-        } catch (Exception ex) {
-            Exception exceptionToThrow;
-            if (ex instanceof TimeoutException) {
-                // add original exception as suppressed exception to provide more context
-                String timeoutMessage = timeoutMessageSupplier.get();
-                exceptionToThrow = new TimeoutException(timeoutMessage);
-            } else {
-                String msg = "waitFor check logic raised exception";
-                exceptionToThrow = new IllegalStateException(msg);
-            }
-            exceptionToThrow.addSuppressed(ex);
-            throw ExceptionTestUtils.throwAsUnchecked(exceptionToThrow);
-        }
-    }
-
 
     public TestContext(int count, Duration duration) {
         this.latch = new CountDownLatch(count);
@@ -256,16 +208,6 @@ public class TestContext {
         fail(e);
     }
 
-    public CompletionHandler getCompletion() {
-        return (o, e) -> {
-            if (e != null) {
-                this.fail(e);
-            } else {
-                this.complete();
-            }
-        };
-    }
-
     public <T> BiConsumer<T, ? super Throwable> getCompletionDeferred() {
         return (ignore, e) -> {
             if (e != null) {
@@ -276,16 +218,6 @@ public class TestContext {
                 return;
             }
             completeIteration();
-        };
-    }
-
-    public CompletionHandler getExpectedFailureCompletion() {
-        return (o, e) -> {
-            if (e != null) {
-                this.complete();
-            } else {
-                this.fail(new IllegalStateException("got success, expected failure"));
-            }
         };
     }
 

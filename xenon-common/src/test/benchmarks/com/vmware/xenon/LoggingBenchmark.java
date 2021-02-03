@@ -9,8 +9,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 
-import com.vmware.xenon.common.Utils;
-
 @State(Scope.Thread)
 public class LoggingBenchmark {
 

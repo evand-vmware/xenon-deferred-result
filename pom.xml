@@ -98,10 +98,6 @@
 
   <modules>
     <module>xenon-common</module>
-    <module>xenon-loader</module>
-    <module>xenon-ui</module>
-    <module>xenon-loader-test</module>
-    <module>xenon-quickstart</module>
   </modules>
 
   <properties>
@@ -148,20 +144,6 @@
 
   <profiles>
     <profile>
-      <id>development</id>
-      <modules>
-        <module>xenon-host</module>
-        <module>xenon-samples</module>
-        <module>xenon-websocket-test</module>
-        <module>xenon-quickstart</module>
-        <module>xenon-workshop</module>
-      </modules>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-    </profile>
-
-    <profile>
       <id>jmh</id>
       <properties>
         <skipAnalysis>true</skipAnalysis>
@@ -171,10 +153,6 @@
     <profile>
       <id>performance</id>
       <modules>
-        <module>xenon-host</module>
-        <module>xenon-samples</module>
-        <module>xenon-websocket-test</module>
-        <module>xenon-quickstart</module>
       </modules>
       <properties>
         <testHeapSizeMb>8192</testHeapSizeMb>
@@ -185,10 +163,6 @@
     <profile>
       <id>coverage</id>
       <modules>
-        <module>xenon-host</module>
-        <module>xenon-samples</module>
-        <module>xenon-websocket-test</module>
-        <module>xenon-quickstart</module>
       </modules>
       <build>
         <plugins>
@@ -197,14 +171,13 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-              <argLine>-Xss${testThreadStackSizeKb}k -Xmx${testHeapSizeMb}m ${jacocoSurefireArgLine} ${testJvmOpts}</argLine>
+              <argLine>-Xss${testThreadStackSizeKb}k -Xmx${testHeapSizeMb}m ${testJvmOpts}</argLine>
             </configuration>
           </plugin>
           <!-- Depend on JaCoCo for coverage reports -->
           <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
-            <version>0.7.6.201602180812</version>
             <executions>
               <execution>
                 <id>pre-unit-test</id>
@@ -304,17 +277,6 @@
               </execution>
             </executions>
           </plugin>
-          <plugin>
-            <groupId>org.sonatype.plugins</groupId>
-            <artifactId>nexus-staging-maven-plugin</artifactId>
-            <version>1.6.7</version>
-            <extensions>true</extensions>
-            <configuration>
-              <serverId>ossrh</serverId>
-              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-              <autoReleaseAfterClose>${autoReleaseAfterClose}</autoReleaseAfterClose>
-            </configuration>
-          </plugin>
         </plugins>
       </build>
     </profile>
@@ -356,7 +318,7 @@
           <source>1.8</source>
           <compilerId>javac</compilerId>
           <compilerArgs>
-            <arg>-Werror</arg>
+<!--            <arg>-Werror</arg>-->
             <arg>-Xlint:-processing</arg>
           </compilerArgs>
           <showWarnings>true</showWarnings>
@@ -367,7 +329,6 @@
         <artifactId>maven-source-plugin</artifactId>
         <version>2.4</version>
         <configuration>
-          <skip>${skipAnalysis}</skip>
         </configuration>
         <executions>
           <execution>
@@ -391,7 +352,6 @@
           </dependency>
         </dependencies>
         <configuration>
-          <skip>${skipAnalysis}</skip>
           <configLocation>checkstyle.xml</configLocation>
           <headerLocation>contrib/header.regexp</headerLocation>
           <encoding>UTF-8</encoding>
@@ -414,7 +374,6 @@
         <artifactId>maven-pmd-plugin</artifactId>
         <version>3.7</version>
         <configuration>
-          <skip>${skipAnalysis}</skip>
           <linkXRef>false</linkXRef>
           <failOnViolation>true</failOnViolation>
           <includeTests>true</includeTests>
@@ -443,7 +402,6 @@
         <artifactId>findbugs-maven-plugin</artifactId>
         <version>3.0.4</version>
         <configuration>
-          <skip>${skipAnalysis}</skip>
           <effort>Max</effort>
           <xmlOutput>true</xmlOutput>
           <excludeFilterFile>${project.parent.basedir}/findbugs-exclude.xml</excludeFilterFile>
