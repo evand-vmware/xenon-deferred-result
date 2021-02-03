@@ -22,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 import java.util.logging.StreamHandler;
@@ -36,6 +37,7 @@ import org.junit.Test;
 import com.vmware.xenon.common.test.TestContext;
 
 public class TestDeferredResult {
+    private static final Logger logger = Logger.getLogger(TestDeferredResult.class.getSimpleName());
     private ByteArrayOutputStream loggerOutputStream;
     private java.util.logging.Handler logHandler;
     private boolean isExceptionLoggingEnabledInitial;
@@ -664,6 +666,34 @@ public class TestDeferredResult {
         String output = getLogContents();
         Assert.assertTrue(output.contains(stackTraceString));
         Assert.assertTrue(output.contains(exceptionError));
+    }
+
+    @Test
+    public void testWhenCompleteNotify() {
+        TestContext ctx = new TestContext(1, TestContext.DEFAULT_WAIT_DURATION);
+        ctx.await(() -> {
+            int sleepTimeMilis = 100;
+
+            Object notifier = new Object();
+            synchronized (notifier) {
+
+                DeferredResult<Void> dr = new DeferredResult<>();
+                dr.thenAccept(c -> {
+                    try {
+                        logger.log(Level.INFO, String.format("Sleeping for %d ms", sleepTimeMilis));
+                        Thread.sleep(sleepTimeMilis);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                        Assert.fail("Sleep was interrupted");
+                    }
+                }).whenCompleteNotify(notifier);
+                runAfter(10, () -> dr.complete(null));
+
+                logger.log(Level.INFO, "Waiting to be notified");
+                notifier.wait();
+                ctx.complete();
+            }
+        });
     }
 
 //    @Test // FIXME This test is flaky, disabling

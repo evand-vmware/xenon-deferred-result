@@ -447,22 +447,24 @@ public final class DeferredResult<T> {
         return this.completableFuture.completeExceptionally(ex);
     }
 
-//    /** TODO Reimplement without Operation
-//     * Has the same semantics as {@link #whenComplete(BiConsumer)} but notifies
-//     * the provided operation that the stage is completed.
-//     * @param operation
-//     * @return
-//     */
-//    public DeferredResult<T> whenCompleteNotify(Operation operation) {
-//        return wrap(this.completableFuture.whenComplete((ignore, ex) -> {
-//            if (ex != null) {
-//                if (ex instanceof CompletionException) {
-//                    ex = ex.getCause();
-//                }
-//                operation.fail(ex);
-//            } else {
-//                operation.complete();
-//            }
-//        }));
-//    }
+    /**
+     * Has the same semantics as {@link #whenComplete(BiConsumer)} but notifies
+     * the provided object that the stage is completed.
+     * @param object The object to notify on success
+     * @return
+     */
+    public DeferredResult<T> whenCompleteNotify(Object object) {
+        return wrap(this.completableFuture.whenComplete((ignore, ex) -> {
+            if (ex != null) {
+                if (ex instanceof CompletionException) {
+                    ex = ex.getCause();
+                }
+                throw new RuntimeException(ex);
+            } else {
+                synchronized (object) {
+                    object.notify();
+                }
+            }
+        }));
+    }
 }
