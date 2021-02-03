@@ -28,3 +28,9 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     - name: Build with Maven
       run: ./mvnw -B package --file pom.xml
+    - name: Archive build artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: build-jar
+        path: |
+          xenon-common/target/xenon-common-1.7.0-SNAPSHOT.jar 
